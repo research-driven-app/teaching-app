@@ -1,8 +1,23 @@
 import streamlit as st
 import pandas as pd
 
+st.set_page_config(initial_sidebar_state="collapsed")
+st.markdown(
+    """
+<style>
+    [data-testid="collapsedControl"] {
+        display: none
+    }
+</style>
+""",
+    unsafe_allow_html=True,
+)
 st.title("Brand Reputation App")
+
+st.page_link("pages/page_2.py", label="Compute and Visualize Brand Reputation", icon="▶️")
+st.markdown("---")
 st.markdown(" ")
+
 
 # Create three columns
 col1, spacer, col2 = st.columns([1.2,0.1,0.8])
@@ -49,9 +64,10 @@ col12.download_button(
 )
 
 # Add a switch to the left column
-if col12.checkbox("Add Additional Diver"):
+if col12.checkbox("Add New Driver"):
     uploaded_file2 = col1.file_uploader("Upload Extra Dictionary (Additional Driver)", type=("xlsx"))
-
+    # Add a text input field below the second file upload
+    text_input = col1.text_input("New Driver Name")
     if uploaded_file2 is not None:
         df_add = pd.read_excel(uploaded_file2)
         col1.write("Additional Driver Dictionary Uploaded")
@@ -66,4 +82,8 @@ col_selection1 = col2.selectbox("Select ID", df.columns, index=df.columns.get_lo
 col_selection2 = col2.selectbox("Select Timestamp", df.columns, index=df.columns.get_loc('created_at'))
 col_selection3 = col2.selectbox("Select Text", df.columns, index=df.columns.get_loc('text'))
 
+
+
+
 st.table(df.head())
+
