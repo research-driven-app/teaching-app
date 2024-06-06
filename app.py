@@ -67,7 +67,7 @@ col12.download_button(
 if col12.checkbox("Add New Driver"):
     uploaded_file2 = col1.file_uploader("Upload Extra Dictionary (Additional Driver)", type=("xlsx"))
     # Add a text input field below the second file upload
-    text_input = col1.text_input("New Driver Name")
+    text_input = col1.text_input("New Driver Name", "Custom")
     if uploaded_file2 is not None:
         df_add = pd.read_excel(uploaded_file2)
         col1.write("Additional Driver Dictionary Uploaded")
