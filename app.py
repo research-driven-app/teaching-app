@@ -13,13 +13,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 df = pd.read_csv("data/default_clean.csv")
+default_dictionary = pd.read_excel("data/default_dict.xlsx")
+
+
 headLeft, headSpacer, headRight = st.columns([0.7,0.05,0.2])
 
 headRight.markdown(" ")
 headRight.markdown(" ")
 
 headLeft.title("Brand Reputation App")
-st.page_link("pages/page_2.py", label="Compute and Visualize Brand Reputation", icon="▶️")
+st.page_link("pages/app.py", label="Compute and Visualize Brand Reputation", icon="▶️")
 st.markdown("---")
 st.markdown(" ")
 
@@ -38,7 +41,7 @@ if headRight.checkbox("Edit"):
 
     col11, spacer11, col12 = col1.columns([1,0.1,1])
 
-    default_dictionary = pd.read_excel("data/default_dict.xlsx")
+    
 
     # Add a download button for the Excel file
 
@@ -72,6 +75,7 @@ if headRight.checkbox("Edit"):
         uploaded_file2 = col1.file_uploader("Upload Extra Dictionary (Additional Driver)", type=("xlsx"))
         # Add a text input field below the second file upload
         text_input = col1.text_input("New Driver Name", "Custom")
+
         if uploaded_file2 is not None:
             df_add = pd.read_excel(uploaded_file2)
             col1.write("Additional Driver Dictionary Uploaded")
@@ -79,7 +83,7 @@ if headRight.checkbox("Edit"):
             df_add = pd.read_excel("data/default_additional_dictionary.xlsx")
 
     # Add a string input to the right column with a default value
-    string_input = col2.text_input("Timestamp Format", "yyyy-MM-dd'T'HH:mm:ss")
+    string_input = col2.text_input("Timestamp Format", "ISO8601")
 
     # Add three column selections to the right column with default values
     col_selection1 = col2.selectbox("Select ID", df.columns, index=df.columns.get_loc('tweet_id'))
@@ -87,7 +91,10 @@ if headRight.checkbox("Edit"):
     col_selection3 = col2.selectbox("Select Text", df.columns, index=df.columns.get_loc('text'))
 
 
-
+# ADD HERE RENAMING BASED ON SETTINGS
 
 st.table(df.head())
 
+df.sample(frac=0.1).to_csv("data/cached_df.csv", index=False)
+#df.to_csv("data/cached_df.csv", index=False)
+default_dictionary.to_csv("data/cached_dictionary.csv", index=False)
