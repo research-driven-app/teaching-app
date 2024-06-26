@@ -5,6 +5,9 @@ import os
 
 ## Text Mining
 import nltk
+
+##download NLTK data
+nltk.download('punkt')
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -36,8 +39,7 @@ def stem_sentence(sentence):
     # Initialize the PorterStemmer
     stemmer = PorterStemmer()
 
-    ##download NLTK data
-    nltk.download('punkt')
+
 
     ##define the stemming function
     words = nltk.word_tokenize(sentence)
@@ -198,3 +200,5 @@ def compute_drives(final_df, granularity):
     driver_columns = driver_columns + ['Brand Reputation']
 
     return grouped_df[driver_columns]
+
+

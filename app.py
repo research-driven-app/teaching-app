@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import backend as bk
+
 
 st.set_page_config(initial_sidebar_state="collapsed")
 st.markdown(
@@ -25,13 +27,18 @@ headLeft.title("Brand Reputation App")
 st.page_link("pages/app.py", label="Compute and Visualize Brand Reputation", icon="▶️")
 st.markdown("---")
 st.markdown(" ")
-
+# Add integer input for example purposes
+rename = False
+user_input_integer = 1000
 if headRight.checkbox("Edit"):
-
+    rename = True
     # Create three columns
     col1, spacer, col2 = st.columns([1.2,0.1,0.8])
+    user_input_integer = col1.number_input('Sample Size', min_value=100, value=1000, step=1)
 
     uploaded_file = col1.file_uploader("Choose a CSV file", type=("csv"))
+
+
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
         col1.write("Tweets Data Uploaded")
@@ -86,15 +93,33 @@ if headRight.checkbox("Edit"):
     string_input = col2.text_input("Timestamp Format", "ISO8601")
 
     # Add three column selections to the right column with default values
-    col_selection1 = col2.selectbox("Select ID", df.columns, index=df.columns.get_loc('tweet_id'))
-    col_selection2 = col2.selectbox("Select Timestamp", df.columns, index=df.columns.get_loc('created_at'))
-    col_selection3 = col2.selectbox("Select Text", df.columns, index=df.columns.get_loc('text'))
+    col_selection1 = col2.selectbox("Select ID", df.columns, index=1)
+    col_selection2 = col2.selectbox("Select Timestamp", df.columns, index=2)
+    col_selection3 = col2.selectbox("Select Text", df.columns, index=0)
 
+    new_col_names = [col_selection1, col_selection2, col_selection3]
 
-# ADD HERE RENAMING BASED ON SETTINGS
+    no_error_renaming = True
+    if len(set(new_col_names)) != 3:
+        no_error_renaming = False
+        col2.markdown('<span style="font-style: bold; color: red;">Error: Column names must be unique</span>', unsafe_allow_html=True)
+
+if rename and no_error_renaming:
+    st.markdown('<span style="font-style: bold; color: green;">Note: Edits to the tweets table are shown in the table below</span>', unsafe_allow_html=True)
+    df.rename(columns={
+        new_col_names[0]: "tweet_id-32876tjkdhsba",
+        new_col_names[1]: "created_at-32876tjkdhsba",
+        new_col_names[2]: "text-32876tjkdhsba"
+    }, inplace=True)
+
+    df.rename(columns={
+    "tweet_id-32876tjkdhsba": "tweet_id",
+    "created_at-32876tjkdhsba": "created_at",
+    "text-32876tjkdhsba": "text"
+    }, inplace=True)
 
 st.table(df.head())
 
-df.sample(frac=0.1).to_csv("data/cached_df.csv", index=False)
+df.sample(user_input_integer).to_csv("data/cached_df.csv", index=False)
 #df.to_csv("data/cached_df.csv", index=False)
 default_dictionary.to_csv("data/cached_dictionary.csv", index=False)
