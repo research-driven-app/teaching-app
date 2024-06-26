@@ -1,1 +1,5 @@
 openpyxl
+nltk
+sklearn
+langdetect
+collections
