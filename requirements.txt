@@ -2,3 +2,4 @@ openpyxl
 nltk
 scikit-learn
 langdetect
+streamlit
