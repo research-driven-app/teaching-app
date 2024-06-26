@@ -1,5 +1,5 @@
 openpyxl
 nltk
-sklearn
+scikit-learn
 langdetect
 collections
