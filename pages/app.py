@@ -9,7 +9,7 @@ dictionary = pd.read_csv("data/cached_dictionary.csv")
 
 df_preprocessed = bk.preprocess(df)
 
-df_joined = bk.join_and_multiply_data(df_preprocessed, dictionary, df)
+df_joined = bk.join_and_multiply_data(df_preprocessed, dictionary, df, timestamp_format_macro=st.session_state['timestamp_pattern'])
 
 
 

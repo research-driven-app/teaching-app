@@ -106,7 +106,7 @@ def preprocess(df):
 
 
 @st.cache_data
-def join_and_multiply_data(df, dictionary, old_df):
+def join_and_multiply_data(df, dictionary, old_df, timestamp_format_macro='ISO8601'):
 
     joined_df = pd.merge(df, dictionary, on='term', how='inner')
 
@@ -119,7 +119,7 @@ def join_and_multiply_data(df, dictionary, old_df):
 
     aggregated_df = joined_df.groupby('tweet_id').sum().reset_index()
 
-    old_df = change_time_columns(old_df)
+    old_df = change_time_columns(old_df,  format_arg = timestamp_format_macro)
 
     final_df = pd.merge(old_df, aggregated_df, on='tweet_id', how='inner')
 

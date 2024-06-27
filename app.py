@@ -30,6 +30,7 @@ st.markdown(" ")
 # Add integer input for example purposes
 rename = False
 user_input_integer = 1000
+st.session_state['timestamp_pattern'] = "ISO8601"
 if headRight.checkbox("Edit"):
     rename = True
     # Create three columns
@@ -91,6 +92,9 @@ if headRight.checkbox("Edit"):
 
     # Add a string input to the right column with a default value
     string_input = col2.text_input("Timestamp Format", "ISO8601")
+
+    
+    st.session_state['timestamp_pattern'] = string_input
 
     # Add three column selections to the right column with default values
     col_selection1 = col2.selectbox("Select ID", df.columns, index=1)
