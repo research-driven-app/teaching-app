@@ -122,8 +122,13 @@ if rename and no_error_renaming:
     "text-32876tjkdhsba": "text"
     }, inplace=True)
 
-st.table(df.head())
+df = df.sample(user_input_integer, random_state=123456789)
 
-df.sample(user_input_integer).to_csv("data/cached_df.csv", index=False)
+st.table(df)
+
+st.session_state['cached_df'] = df
+st.session_state['cached_dictionary'] = default_dictionary
+
+#df.sample(user_input_integer).to_csv("data/cached_df.csv", index=False)
 #df.to_csv("data/cached_df.csv", index=False)
-default_dictionary.to_csv("data/cached_dictionary.csv", index=False)
+#default_dictionary.to_csv("data/cached_dictionary.csv", index=False)

@@ -3,9 +3,12 @@ import pandas as pd
 import backend as bk
 st.set_page_config(initial_sidebar_state="collapsed")
 
-df = pd.read_csv("data/cached_df.csv")
+#df = pd.read_csv("data/cached_df.csv")
 
-dictionary = pd.read_csv("data/cached_dictionary.csv")
+#dictionary = pd.read_csv("data/cached_dictionary.csv")
+
+df = st.session_state['cached_df']
+dictionary = st.session_state['cached_dictionary']
 
 df_preprocessed = bk.preprocess(df)
 
