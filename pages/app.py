@@ -9,10 +9,12 @@ st.set_page_config(initial_sidebar_state="collapsed")
 
 df = st.session_state['cached_df']
 dictionary = st.session_state['cached_dictionary']
+extra_dictionary = st.session_state['new_dictionary']
+extra_drive = st.session_state['new_drive']
 
 df_preprocessed = bk.preprocess(df)
 
-df_joined = bk.join_and_multiply_data(df_preprocessed, dictionary, df, timestamp_format_macro=st.session_state['timestamp_pattern'])
+df_joined = bk.join_and_multiply_data(df_preprocessed, dictionary, df, timestamp_format_macro=st.session_state['timestamp_pattern'], extra_dict=extra_dictionary)
 
 
 
@@ -51,7 +53,7 @@ else:
   gran = ['year']
 
 
-df_drives = bk.compute_drives(df_joined, gran)
+df_drives = bk.compute_drives(df_joined, gran, extra_driver=extra_drive)
 
 col1.download_button(
     label="Download All Drives",

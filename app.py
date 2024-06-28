@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import backend as bk
 
-
+from io import BytesIO
 st.set_page_config(initial_sidebar_state="collapsed")
 st.markdown(
     """
@@ -14,7 +14,7 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
-df = pd.read_csv("data/default_clean.csv")
+
 default_dictionary = pd.read_excel("data/default_dict.xlsx")
 
 
@@ -27,10 +27,14 @@ headLeft.title("Brand Reputation App")
 st.page_link("pages/app.py", label="Compute and Visualize Brand Reputation", icon="▶️")
 st.markdown("---")
 st.markdown(" ")
-# Add integer input for example purposes
+
 rename = False
 user_input_integer = 1000
-st.session_state['timestamp_pattern'] = "ISO8601"
+
+current_pattern = "ISO8601"
+current_new_drive = None
+df_add = None
+df = pd.read_csv("data/default_clean.csv")
 if headRight.checkbox("Edit"):
     rename = True
     # Create three columns
@@ -53,29 +57,26 @@ if headRight.checkbox("Edit"):
 
     # Add a download button for the Excel file
 
-    svg_string = """
-    <center>
-    <svg width="50px" height="50px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" version="1.1" id="Capa_1" width="800px" height="800px" viewBox="0 0 395.001 395" xml:space="preserve">
-    <g>
-        <g>
-            <path d="M322.852,0H72.15C32.366,0,0,32.367,0,72.15v250.7C0,362.634,32.367,395,72.15,395h250.701    c39.784,0,72.15-32.366,72.15-72.15V72.15C395.002,32.367,362.635,0,322.852,0z M370.002,322.85    c0,25.999-21.151,47.15-47.15,47.15H72.15C46.151,370,25,348.849,25,322.85V72.15C25,46.151,46.151,25,72.15,25h250.701    c25.999,0,47.15,21.151,47.15,47.15L370.002,322.85L370.002,322.85z"/>
-            <path d="M197.501,79.908c-33.775,0-61.253,27.479-61.253,61.254c0,6.903,5.596,12.5,12.5,12.5c6.904,0,12.5-5.597,12.5-12.5    c0-19.99,16.263-36.254,36.253-36.254s36.253,16.264,36.253,36.254c0,11.497-8.314,19.183-22.01,30.474    c-12.536,10.334-26.743,22.048-26.743,40.67v40.104c0,6.902,5.597,12.5,12.5,12.5c6.903,0,12.5-5.598,12.5-12.5v-40.104    c0-6.832,8.179-13.574,17.646-21.381c13.859-11.426,31.106-25.646,31.106-49.763C258.754,107.386,231.275,79.908,197.501,79.908z"/>
-            <path d="M197.501,283.024c-8.842,0-16.034,7.193-16.034,16.035c0,8.84,7.192,16.033,16.034,16.033    c8.841,0,16.034-7.193,16.034-16.033C213.535,290.217,206.342,283.024,197.501,283.024z"/>
-        </g>
-    </g>
-    </svg>
-    </center>
-    """
+    with open('svg_question_mark.txt', 'r') as file:
+        svg_string = file.read()
 
     info_string = "You can upload an XLSX file with 3 columns and the same amount of rows of the current dictionary. &#013; Download the current dictionary to generate such data."
+    svg_string = svg_string.replace("INSERT_HERE", info_string)
 
-    col11.markdown("<span title='" + info_string + "'>" + svg_string + "</span>", unsafe_allow_html=True)
+    col11.markdown(svg_string, unsafe_allow_html=True)
+
+    # Create a BytesIO buffer for the Excel file
+    output = BytesIO()
+    # Write the DataFrame to this buffer
+    default_dictionary.to_excel(output, index=False)
+    # Seek to the beginning of the stream
+    output.seek(0)
 
     col12.download_button(
         label="Default Dictionary",
-        data=df.to_csv(index=False).encode(),
-        file_name="default_dict.csv",
-        mime="text/csv",
+        data=output.read(),
+        file_name="default_dict.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
     # Add a switch to the left column
@@ -86,15 +87,27 @@ if headRight.checkbox("Edit"):
 
         if uploaded_file2 is not None:
             df_add = pd.read_excel(uploaded_file2)
-            col1.write("Additional Driver Dictionary Uploaded")
-        else:
-            df_add = pd.read_excel("data/default_additional_dictionary.xlsx")
+            if "term" not in df_add.columns:
+                col1.markdown('<span style="color: red;">Error: At least one column name must be "term"</span>', unsafe_allow_html=True)
+            elif len(df_add.columns) != 3:
+                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with exactly 3 columns: term, ANY-STRING_pos, ANY-STRING_neg</span>', unsafe_allow_html=True)
+            elif bk.check_columns_for_neg_suffix(df_add, "_neg"):
+                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with with one of the columns called ANY-STRING_neg</span>', unsafe_allow_html=True)
+            elif bk.check_columns_for_neg_suffix(df_add, "_pos"):
+                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with with one of the columns called ANY-STRING_pos</span>', unsafe_allow_html=True)
+            else:
+                col1.write('<span style="color: green;"><b>Success</b>: Additional Driver Dictionary Uploaded and Validated</span>', unsafe_allow_html=True)
+                current_new_drive = text_input
+            
+                for col in df_add.columns:
+                    if "_neg" in col:
+                        df_add.rename(columns={col: current_new_drive + "_neg"}, inplace=True)
+                    elif "_pos" in col:
+                        df_add.rename(columns={col: current_new_drive + "_pos"}, inplace=True)
+            
 
     # Add a string input to the right column with a default value
-    string_input = col2.text_input("Timestamp Format", "ISO8601")
-
-    
-    st.session_state['timestamp_pattern'] = string_input
+    current_pattern = col2.text_input("Timestamp Format", "ISO8601")
 
     # Add three column selections to the right column with default values
     col_selection1 = col2.selectbox("Select ID", df.columns, index=1)
@@ -106,10 +119,12 @@ if headRight.checkbox("Edit"):
     no_error_renaming = True
     if len(set(new_col_names)) != 3:
         no_error_renaming = False
-        col2.markdown('<span style="font-style: bold; color: red;">Error: Column names must be unique</span>', unsafe_allow_html=True)
+        col2.markdown('<span style="color: red;"><b>Error</b>: Column names must be unique</span>', unsafe_allow_html=True)
+
+    st.markdown("---")
 
 if rename and no_error_renaming:
-    st.markdown('<span style="font-style: bold; color: green;">Note: Edits to the tweets table are shown in the table below</span>', unsafe_allow_html=True)
+    st.markdown('<span style="color: green;"><b>Note</b>: Edits to the tweets table are shown in the table below</span>', unsafe_allow_html=True)
     df.rename(columns={
         new_col_names[0]: "tweet_id-32876tjkdhsba",
         new_col_names[1]: "created_at-32876tjkdhsba",
@@ -121,12 +136,16 @@ if rename and no_error_renaming:
     "created_at-32876tjkdhsba": "created_at",
     "text-32876tjkdhsba": "text"
     }, inplace=True)
+user_input_integer = min(len(df), user_input_integer)
+df_to_cache = df.sample(user_input_integer, random_state=123456789)
 
-df = df.sample(user_input_integer, random_state=123456789)
+st.table(df_to_cache)
 
-st.table(df)
+st.session_state['timestamp_pattern'] = current_pattern
+st.session_state['new_drive'] = current_new_drive
+st.session_state['new_dictionary'] = df_add
 
-st.session_state['cached_df'] = df
+st.session_state['cached_df'] = df_to_cache
 st.session_state['cached_dictionary'] = default_dictionary
 
 #df.sample(user_input_integer).to_csv("data/cached_df.csv", index=False)

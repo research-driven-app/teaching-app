@@ -24,6 +24,16 @@ from collections import Counter
 
 import streamlit as st
 
+def check_columns_for_neg_suffix(df_check, string):
+    # Iterate through each column name in the DataFrame
+    for column in df_check.columns:
+        # Check if '_neg' is a substring of the column name
+        if string in column:
+            # Return False if '_neg' is found
+            return False
+    # Return True if '_neg' is not found in any column name
+    return True
+
 def detect_language(text):
 
     # Define a function using langdetect, there is some console printing (we might be able to loose it or integrate it in the final output)
@@ -38,8 +48,6 @@ def stem_sentence(sentence):
 
     # Initialize the PorterStemmer
     stemmer = PorterStemmer()
-
-
 
     ##define the stemming function
     words = nltk.word_tokenize(sentence)
@@ -106,7 +114,10 @@ def preprocess(df):
 
 
 @st.cache_data
-def join_and_multiply_data(df, dictionary, old_df, timestamp_format_macro='ISO8601'):
+def join_and_multiply_data(df, dictionary, old_df, timestamp_format_macro='ISO8601', extra_dict=None):
+
+    if extra_dict is not None:
+        dictionary = pd.merge(dictionary, extra_dict, on='term', how='inner')
 
     joined_df = pd.merge(df, dictionary, on='term', how='inner')
 
@@ -125,71 +136,53 @@ def join_and_multiply_data(df, dictionary, old_df, timestamp_format_macro='ISO86
 
     return final_df
 
+def prepare_aggregate_dict(list_of_drives):
+    aggregate_dict = {}
+    aggregate_dict['tweet_id'] = 'count'
+    for drive in list_of_drives:
+        aggregate_dict[drive+"_pos"] = 'sum'
+        aggregate_dict[drive+"_neg"] = 'sum'
+    return aggregate_dict
+
+
 @st.cache_data
-def compute_drives(final_df, granularity):
-    ## Here we define what columns are grouped by what function, e.g. 'like_count': 'sum' is summing the likes by year and quarter
-    grouped_df = final_df.groupby(granularity).agg({
-        'tweet_id': 'count',
-        'price_pos' : 'sum',
-        'price_neg': 'sum',
-        'price_pos': 'sum',
-        'price_neg': 'sum',
-        'squality_pos': 'sum',
-        'squality_neg': 'sum',
-        'goodsq_pos': 'sum',
-        'goodsq_neg' : 'sum',
-        'cool_pos': 'sum',
-        'cool_neg': 'sum',
-        'exciting_pos': 'sum',
-        'exciting_neg': 'sum',
-        'innov_pos': 'sum',
-        'innov_neg': 'sum',
-        'socresp_pos': 'sum',
-        'socresp_neg': 'sum',
-        'comm_pos': 'sum',
-        'comm_neg': 'sum',
-        'friendly_pos': 'sum',
-        'friendly_neg': 'sum',
-        'personalrel_pos': 'sum',
-        'personalrel_neg': 'sum',
-        'trust_pos': 'sum',
-        'trust_neg': 'sum'
-    }).reset_index()
+def compute_drives(final_df, granularity, extra_driver=None):
+    dict_columns_ids = ["price", "squality", "goodsq", "cool", "exciting", "innov", "socresp", "comm", "friendly", "personalrel", "trust"]
+    if extra_driver is not None:
+        dict_columns_ids.append(extra_driver)
+
+    dict_to_aggregate = prepare_aggregate_dict(dict_columns_ids)
+
+    grouped_df = final_df.groupby(granularity).agg(dict_to_aggregate).reset_index()
 
     grouped_df = grouped_df.rename(columns={'tweet_id': 'total_tweets'})
 
+    dict_of_drivers = {}
+    dict_of_drivers["Value"] = ["price", "squality", "goodsq"]
+    dict_of_drivers["Brand"] = ["cool", "exciting", "innov", "socresp"]
+    dict_of_drivers["Relationship"] = ["comm", "friendly", "personalrel", "trust"]
 
-    ##Value Driver
-    grouped_df['Price_net'] = grouped_df['price_pos'] - grouped_df['price_neg']
-    grouped_df['Gquality_net'] = grouped_df['squality_pos'] - grouped_df['squality_neg']
-    grouped_df['Goodsq_net'] = grouped_df['goodsq_pos'] - grouped_df['goodsq_neg']
-    ## To establish Value Driver sum the three subdrivers and take the average
-    grouped_df['Value_Driver'] = (grouped_df['Price_net'] + grouped_df['Gquality_net'] + grouped_df['Goodsq_net'])/3
+    if extra_driver is not None:
+        dict_of_drivers[extra_driver] = [extra_driver]
 
+    driver_columns = []
 
-    ##Brand Driver
-    grouped_df['Cool_net'] = grouped_df['cool_pos'] - grouped_df['cool_neg']
-    grouped_df['Innovative_net'] = grouped_df['innov_pos'] - grouped_df['innov_neg']
-    grouped_df['Exciting_net'] = grouped_df['exciting_pos'] - grouped_df['exciting_neg']
-    grouped_df['SocResp_net'] = grouped_df['socresp_pos'] - grouped_df['socresp_neg']
-    ## To establish Brand Driver sum the four subdrivers and take the average
-    grouped_df['Brand_Driver'] = (grouped_df['Cool_net'] + grouped_df['Innovative_net'] + grouped_df['Exciting_net']+ grouped_df['SocResp_net'])/4
+    for driver in dict_of_drivers:
 
-    ##Relationship Driver
-    grouped_df['Community_net'] = grouped_df['comm_pos'] - grouped_df['comm_neg']
-    grouped_df['Friendly_net'] = grouped_df['friendly_pos'] - grouped_df['friendly_neg']
-    grouped_df['PersonalRel_net'] = grouped_df['personalrel_pos'] - grouped_df['personalrel_neg']
-    grouped_df['Trustworthy_net'] = grouped_df['trust_pos'] - grouped_df['trust_neg']
-    ## To establish Relationship Driver sum the four subdrivers and take the average
-    grouped_df['Relationship_Driver'] = (grouped_df['Community_net'] + grouped_df['Friendly_net'] + grouped_df['PersonalRel_net']+ grouped_df['Trustworthy_net'])/4
+        for value in dict_of_drivers[driver]:
+
+            new_column = value+"_net"
+            grouped_df[new_column] = grouped_df[value+"_pos"] - grouped_df[value+"_neg"]
+            driver_columns.append(new_column)
+
+        computed_nets = [value+"_net" for value in dict_of_drivers[driver]]
+        new_column_driver = driver+"_Driver"
+        grouped_df[new_column_driver] = grouped_df[computed_nets].mean(axis=1)
+        driver_columns.append(new_column_driver)        
 
     grouped_df['Brand Reputation'] = grouped_df['Value_Driver'] + grouped_df['Brand_Driver'] + grouped_df['Relationship_Driver']
-
-    # Define Columns to normalize
-
-    driver_columns = ['Price_net', 'Gquality_net', 'Goodsq_net', 'Value_Driver',
-                    'Cool_net', 'Innovative_net', 'Exciting_net', 'SocResp_net', 'Brand_Driver',
-                    'Community_net', 'Friendly_net', 'PersonalRel_net', 'Trustworthy_net', 'Relationship_Driver']
+    if extra_driver is not None:
+        grouped_df['Brand Reputation'] = grouped_df['Brand Reputation'] + grouped_df[extra_driver+"_Driver"]
 
     # Perform z-score normalization: 1) first means, then standard deviation 2) substract the mean from the value and divide by standard deviation
     for column in driver_columns:
