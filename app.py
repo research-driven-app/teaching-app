@@ -136,10 +136,11 @@ if rename and no_error_renaming:
     "created_at-32876tjkdhsba": "created_at",
     "text-32876tjkdhsba": "text"
     }, inplace=True)
+
 user_input_integer = min(len(df), user_input_integer)
 df_to_cache = df.sample(user_input_integer, random_state=123456789)
 
-st.table(df_to_cache)
+st.table(df_to_cache.head())
 
 st.session_state['timestamp_pattern'] = current_pattern
 st.session_state['new_drive'] = current_new_drive
