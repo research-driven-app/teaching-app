@@ -11,9 +11,6 @@ nltk.download('punkt')
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 
-##Regex for Data Cleaning
-import re
-
 
 ### Detect Language
 from langdetect import detect
@@ -108,18 +105,18 @@ def preprocess(df):
             expanded_rows.append([row['tweet_id'], row['text'], row['created_at'], term, freq])
 
 
-    result_df = pd.DataFrame(expanded_rows, columns=['tweet_id', 'text','created_at', 'term', 'frequency'])
+    result_df = pd.DataFrame(expanded_rows, columns=['tweet_id', 'text', 'created_at', 'term', 'frequency'])
 
     return result_df
 
 
 @st.cache_data
-def join_and_multiply_data(df, dictionary, old_df, timestamp_format_macro='ISO8601', extra_dict=None):
+def join_and_multiply_data(df_join, dictionary, old_df, timestamp_format_macro='ISO8601', extra_dict=None):
 
     if extra_dict is not None:
         dictionary = pd.merge(dictionary, extra_dict, on='term', how='inner')
 
-    joined_df = pd.merge(df, dictionary, on='term', how='inner')
+    joined_df = pd.merge(df_join, dictionary, on='term', how='inner')
 
     drives_list = dictionary.columns.tolist()
     drives_list.remove('term')
@@ -128,13 +125,15 @@ def join_and_multiply_data(df, dictionary, old_df, timestamp_format_macro='ISO86
     for col in drives_list:
         joined_df[col] = joined_df['frequency'] * joined_df[col]
 
+    joined_df = joined_df[drives_list + ['tweet_id']]
     aggregated_df = joined_df.groupby('tweet_id').sum().reset_index()
+
 
     old_df = change_time_columns(old_df,  format_arg = timestamp_format_macro)
 
-    final_df = pd.merge(old_df, aggregated_df, on='tweet_id', how='inner')
+    merged_df = pd.merge(old_df, aggregated_df, on='tweet_id', how='inner')
 
-    return final_df
+    return merged_df
 
 def prepare_aggregate_dict(list_of_drives):
     aggregate_dict = {}
@@ -152,6 +151,8 @@ def compute_drives(final_df, granularity, extra_driver=None):
         dict_columns_ids.append(extra_driver)
 
     dict_to_aggregate = prepare_aggregate_dict(dict_columns_ids)
+
+    dict_to_aggregate["created_at"] = 'first'
 
     grouped_df = final_df.groupby(granularity).agg(dict_to_aggregate).reset_index()
 
@@ -191,7 +192,10 @@ def compute_drives(final_df, granularity, extra_driver=None):
         grouped_df[column] = (grouped_df[column] - mean) / std
 
     driver_columns = driver_columns + ['Brand Reputation']
-
-    return grouped_df[driver_columns]
+    
+    grouped_df.sort_values(by='created_at', inplace=True)
+    grouped_df.set_index("created_at", inplace=True)
+    grouped_df = grouped_df[driver_columns]
+    return grouped_df
 
 

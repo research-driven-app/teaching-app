@@ -3,3 +3,4 @@ nltk
 scikit-learn
 langdetect
 streamlit
+plotly

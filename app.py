@@ -92,9 +92,11 @@ if headRight.checkbox("Edit"):
             elif len(df_add.columns) != 3:
                 col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with exactly 3 columns: term, ANY-STRING_pos, ANY-STRING_neg</span>', unsafe_allow_html=True)
             elif bk.check_columns_for_neg_suffix(df_add, "_neg"):
-                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with with one of the columns called ANY-STRING_neg</span>', unsafe_allow_html=True)
+                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with one of the columns called ANY-STRING_neg</span>', unsafe_allow_html=True)
             elif bk.check_columns_for_neg_suffix(df_add, "_pos"):
-                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with with one of the columns called ANY-STRING_pos</span>', unsafe_allow_html=True)
+                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with one of the columns called ANY-STRING_pos</span>', unsafe_allow_html=True)
+            elif len(df_add) != len(default_dictionary):
+                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with unique terms in same amount of the current dictionary.</span>', unsafe_allow_html=True)
             else:
                 col1.write('<span style="color: green;"><b>Success</b>: Additional Driver Dictionary Uploaded and Validated</span>', unsafe_allow_html=True)
                 current_new_drive = text_input
@@ -138,7 +140,7 @@ if rename and no_error_renaming:
     }, inplace=True)
 
 user_input_integer = min(len(df), user_input_integer)
-df_to_cache = df.sample(user_input_integer, random_state=123456789)
+df_to_cache = df.head(user_input_integer)
 
 st.table(df_to_cache.head())
 
