@@ -2,7 +2,7 @@ Try the streamlit app at:
 
 [brandreputation.streamlit.app](https://brandreputation.streamlit.app/)
 
-enabling the analysis of this paper as a data app
+enabling the analysis of this paper below as a data app
 
 Rust, R. T., Rand, W., Huang, M.-H., Stephen, A. T., Brooks, G., & Chabuk, T. (2021).  <br>
 Real-Time Brand Reputation Tracking Using Social Media.  
