@@ -52,12 +52,17 @@ def stem_sentence(sentence):
     return ' '.join(stemmed_words)
 
 def change_time_columns(df, format_arg='ISO8601'):
-    ##Year and Quarter extracted
+    # Ensure we are working with a copy of the DataFrame to avoid SettingWithCopyWarning
+    df = df.copy()
+    
+    # Convert 'created_at' to datetime
     df['created_at'] = pd.to_datetime(df['created_at'], format=format_arg)
-    df['year'] = df['created_at'].dt.year
-    df['quarter']= df['created_at'].dt.quarter
-    df['month']= df['created_at'].dt.month
-    df['week']= df['created_at'].dt.isocalendar().week
+    
+    # Extract year, quarter, month, and week
+    df.loc[:, 'year'] = df['created_at'].dt.year
+    df.loc[:, 'quarter'] = df['created_at'].dt.quarter
+    df.loc[:, 'month'] = df['created_at'].dt.month
+    df.loc[:, 'week'] = df['created_at'].dt.isocalendar().week
 
     return df
 
