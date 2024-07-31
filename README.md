@@ -11,5 +11,5 @@ Journal of Marketing, 85(4), 21-43.
 
 
 ```
-streamlit run app.py --showSidebarNavigation False
+streamlit run app.py --client.showSidebarNavigation False
 ```

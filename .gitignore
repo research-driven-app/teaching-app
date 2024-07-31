@@ -2,7 +2,7 @@
 .ipynb_checkpoints/
 
 # llamaindex key
-.streamlit/
+.streamlit/secrets.toml
 
 # Jupyter Notebook checkpoints
 __pycache__/
