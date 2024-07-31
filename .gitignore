@@ -8,4 +8,8 @@
 __pycache__/
 
 # avoding to unlawfully distribute the PDFs of the papers
-data/paper_PDFs/
+data/paper_PDFs/paper.pdf
+data/paper_PDFs/appendix.pdf
+
+#trashed bin I used in this project
+trash/
