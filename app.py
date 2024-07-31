@@ -2,18 +2,10 @@ import streamlit as st
 import pandas as pd
 import backend as bk
 
+
+
 from io import BytesIO
-st.set_page_config(initial_sidebar_state="collapsed")
-st.markdown(
-    """
-<style>
-    [data-testid="collapsedControl"] {
-        display: none
-    }
-</style>
-""",
-    unsafe_allow_html=True,
-)
+
 
 default_dictionary = pd.read_excel("data/default_dict.xlsx")
 
@@ -154,3 +146,4 @@ st.session_state['cached_dictionary'] = default_dictionary
 #df.sample(user_input_integer).to_csv("data/cached_df.csv", index=False)
 #df.to_csv("data/cached_df.csv", index=False)
 #default_dictionary.to_csv("data/cached_dictionary.csv", index=False)
+

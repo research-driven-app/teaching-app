@@ -4,7 +4,10 @@ import backend as bk
 from io import BytesIO
 import plotly.graph_objects as go
 
-st.set_page_config(initial_sidebar_state="collapsed")
+import ai_assistant as ai
+
+
+#st.set_page_config(initial_sidebar_state="collapsed")
 
 #df = pd.read_csv("data/cached_df.csv")
 
@@ -23,19 +26,6 @@ df_joined = bk.join_and_multiply_data(df_preprocessed,
                                       df, 
                                       timestamp_format_macro=pattern, 
                                       extra_dict=extra_dictionary)
-
-
-
-st.markdown(
-    """
-<style>
-    [data-testid="collapsedControl"] {
-        display: none
-    }
-</style>
-""",
-    unsafe_allow_html=True,
-)
 
 
 st.title("Brand Reputation App")
@@ -110,3 +100,28 @@ fig.update_layout(xaxis_title='Time',
 
 
 col2.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
+if "messages" not in st.session_state.keys(): # Initialize the chat message history
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Ask me a question about the paper 'Real-Time Brand Reputation Tracking Using Social Media'!"}
+    ]
+
+index = ai.load_data()
+chat_engine = index.as_chat_engine(chat_mode="condense_question", verbose=True)
+
+prompt = st.sidebar.chat_input("Your question")
+
+if prompt is not None : # Prompt for user input and save to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+for message in st.session_state.messages: # Display the prior chat messages
+    with st.sidebar.chat_message(message["role"]):
+        st.sidebar.write(message["content"])
+
+if st.session_state.messages[-1]["role"] != "assistant":
+    with st.sidebar.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            response = chat_engine.chat(prompt)
+            st.sidebar.write(response.response)
+            message = {"role": "assistant", "content": response.response}
+            st.session_state.messages.append(message) # Add response to message history

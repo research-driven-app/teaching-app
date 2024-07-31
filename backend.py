@@ -203,4 +203,3 @@ def compute_drives(final_df, granularity, extra_driver=None):
     grouped_df = grouped_df[driver_columns]
     return grouped_df
 
-

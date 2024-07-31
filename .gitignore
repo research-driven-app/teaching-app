@@ -2,7 +2,10 @@
 .ipynb_checkpoints/
 
 # llamaindex key
-secrets.toml
+.streamlit/
 
 # Jupyter Notebook checkpoints
 __pycache__/
+
+# avoding to unlawfully distribute the PDFs of the papers
+data/paper_PDFs/

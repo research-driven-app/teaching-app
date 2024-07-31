@@ -4,3 +4,5 @@ scikit-learn
 langdetect
 streamlit
 plotly
+openai
+llama-index
