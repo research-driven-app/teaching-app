@@ -45,8 +45,8 @@ def load_data():
     with st.sidebar:
         with st.spinner(text="Booting up the AI Assistant..."):
             
-            src_folder_path = 'data\encrypted_PDFs'
-            dest_folder_path = 'data\paper_PDFs'
+            src_folder_path = 'data/encrypted_PDFs'
+            dest_folder_path = 'data/paper_PDFs'
             new_name_suffix = '.pdf'
 
             copy_and_rename_files(src_folder_path, dest_folder_path, new_name_suffix)
