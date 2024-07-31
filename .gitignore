@@ -3,3 +3,6 @@
 
 # llamaindex key
 secrets.toml
+
+# Jupyter Notebook checkpoints
+__pycache__/
