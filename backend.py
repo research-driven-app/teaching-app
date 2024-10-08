@@ -8,6 +8,7 @@ import nltk
 
 ##download NLTK data
 nltk.download('punkt')
+nltk.data.path.append('nltk_data')
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 
