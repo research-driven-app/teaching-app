@@ -4,5 +4,3 @@ scikit-learn
 langdetect
 streamlit
 plotly
-openai
-llama-index==0.9.48

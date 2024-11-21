@@ -4,8 +4,6 @@ import backend as bk
 from io import BytesIO
 import plotly.graph_objects as go
 
-import ai_assistant as ai
-
 
 #st.set_page_config(initial_sidebar_state="collapsed")
 
