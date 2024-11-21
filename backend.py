@@ -52,20 +52,43 @@ def stem_sentence(sentence):
     stemmed_words = [stemmer.stem(word) for word in words]
     return ' '.join(stemmed_words)
 
-def change_time_columns(df, format_arg='ISO8601'):
+def change_time_columns(df, format_arg=None, dayfirst=True, errors='coerce'):
+    """
+    Process datetime columns in a DataFrame by converting them and extracting components.
+
+    Parameters:
+        df (pd.DataFrame): The input DataFrame.
+        format_arg (str or None): The datetime format to use for parsing. If None, the format is inferred.
+        dayfirst (bool): Whether to interpret the day as the first part of the date when inferring.
+        errors (str): How to handle errors ('raise', 'coerce', or 'ignore').
+
+    Returns:
+        pd.DataFrame: The processed DataFrame with additional datetime components.
+    """
     # Ensure we are working with a copy of the DataFrame to avoid SettingWithCopyWarning
     df = df.copy()
-    
-    # Convert 'created_at' to datetime
-    df['created_at'] = pd.to_datetime(df['created_at'], format=format_arg)
-    
-    # Extract year, quarter, month, and week
-    df.loc[:, 'year'] = df['created_at'].dt.year
-    df.loc[:, 'quarter'] = df['created_at'].dt.quarter
-    df.loc[:, 'month'] = df['created_at'].dt.month
-    df.loc[:, 'week'] = df['created_at'].dt.isocalendar().week
+
+    try:
+        # Convert 'created_at' to datetime
+        df['created_at'] = pd.to_datetime(
+            df['created_at'], 
+            format=format_arg, 
+            dayfirst=dayfirst, 
+            errors=errors
+        )
+
+        # Extract year, quarter, month, and week only for valid datetime values
+        valid_dates = df['created_at'].notna()
+        df.loc[valid_dates, 'year'] = df.loc[valid_dates, 'created_at'].dt.year
+        df.loc[valid_dates, 'quarter'] = df.loc[valid_dates, 'created_at'].dt.quarter
+        df.loc[valid_dates, 'month'] = df.loc[valid_dates, 'created_at'].dt.month
+        df.loc[valid_dates, 'week'] = df.loc[valid_dates, 'created_at'].dt.isocalendar().week
+
+    except Exception as e:
+        print(f"Error while processing datetime column: {e}")
 
     return df
+
 
 # Tokenize the text and add absolute counter
 def tokenize_and_count(text):
