@@ -13,7 +13,7 @@ import pandas as pd
 import backend as bk
 
 
-# This package will help us with buffering later
+# This package will help us with the data buffering later
 from io import BytesIO
 
 # Default options are given here. In our case, we define a default text-mining dictionary, that we keep in the folder /data/
@@ -64,7 +64,6 @@ if headRight.checkbox("Edit"):
     
 
     # Add a download button for the Excel file
-
     with open('svg_question_mark.txt', 'r') as file:
         svg_string = file.read()
 
