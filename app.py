@@ -1,21 +1,37 @@
+# It is helpful to familiarize with the basic functionalities of streamlit
+
+
+# Before starting, we import the relevant packages
+
+# We import streamlit 
 import streamlit as st
+
+# Since there are data operations that need to be done, we also import pandas
 import pandas as pd
+
+# Since there is a backend part, we also import the backend
 import backend as bk
 
 
-
+# This package will help us with buffering later
 from io import BytesIO
 
-
+# Default options are given here. In our case, we define a default text-mining dictionary, that we keep in the folder /data/
 default_dictionary = pd.read_excel("data/default_dict.xlsx")
 
-
+# This next line helps us with layouting, we define three columns. The one on the left takes 70%, then there is a small gap of 5%, and then the rest takes 20%
 headLeft, headSpacer, headRight = st.columns([0.7,0.05,0.2])
 
+
+# We want to push the content of the columns down, therefore we take two whitespaces
 headRight.markdown(" ")
 headRight.markdown(" ")
 
+
+# This is the title of our app, "Brand Reputation App", it is set on the left on top "headLeft.title("name of the app goes here")"
 headLeft.title("Brand Reputation App")
+
+# Here, we link to the next page, this will execute the script
 st.page_link("pages/app.py", label="Compute and Visualize Brand Reputation", icon="▶️")
 st.markdown("---")
 st.markdown(" ")
