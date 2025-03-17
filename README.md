@@ -1,4 +1,4 @@
-This is companion code for the paper on.
+This is companion code for the paper on research-driven apps.
 
 
 
