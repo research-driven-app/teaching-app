@@ -151,6 +151,8 @@ df_to_cache = df.head(user_input_integer)
 
 st.table(df_to_cache.head())
 
+
+# Here we define the session states
 st.session_state['timestamp_pattern'] = current_pattern
 st.session_state['new_drive'] = current_new_drive
 st.session_state['new_dictionary'] = df_add
