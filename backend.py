@@ -6,14 +6,14 @@ import os
 ## Text Mining
 import nltk
 
-##download NLTK data
+##download NLTK data (needed for text-mining)
 nltk.download('punkt')
 nltk.data.path.append('nltk_data')
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-### Detect Language
+### Detect Language 
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 

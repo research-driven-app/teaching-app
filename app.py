@@ -31,22 +31,25 @@ headRight.markdown(" ")
 # This is the title of our app, "Brand Reputation App", it is set on the left on top "headLeft.title("name of the app goes here")"
 headLeft.title("Brand Reputation App")
 
-# Here, we link to the next page, this will execute the script
+# Here, we link to the next page, this will execute the script, where the backend script (text-mining) would be executed
 st.page_link("pages/app.py", label="Compute and Visualize Brand Reputation", icon="▶️")
 st.markdown("---")
 st.markdown(" ")
 
+#Here we define the user input variables and their default values
 rename = False
 user_input_integer = 1000
-
 current_pattern = "ISO8601"
 current_new_drive = None
 df_add = None
 df = pd.read_csv("data/default_clean.csv")
+
+### Here the editing of the settings on the first page is triggered (checkbox: Edit)
 if headRight.checkbox("Edit"):
     rename = True
-    # Create three columns
+    # Create three columns (larger column for file upload, smaller column for settings)
     col1, spacer, col2 = st.columns([1.2,0.1,0.8])
+    # Create a user input widget in the first column, setting the sample size, along with the minimum and default value
     user_input_integer = col1.number_input('Sample Size', min_value=100, value=1000, step=1)
 
     uploaded_file = col1.file_uploader("Choose a CSV file", type=("csv"))
@@ -63,7 +66,7 @@ if headRight.checkbox("Edit"):
 
     
 
-    # Add a download button for the Excel file
+    # Add a download button for an Excel file
     with open('svg_question_mark.txt', 'r') as file:
         svg_string = file.read()
 
@@ -74,10 +77,13 @@ if headRight.checkbox("Edit"):
 
     # Create a BytesIO buffer for the Excel file
     output = BytesIO()
-    # Write the DataFrame to this buffer
+    # Write the dictionary to this Excel buffer
     default_dictionary.to_excel(output, index=False)
     # Seek to the beginning of the stream
+
     output.seek(0)
+    
+    # add a download button for the default dictionary (defined above)
 
     col12.download_button(
         label="Default Dictionary",
@@ -86,7 +92,7 @@ if headRight.checkbox("Edit"):
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-    # Add a switch to the left column
+    # Add a checkbox to the left column if new driver should be added
     if col12.checkbox("Add New Driver"):
         uploaded_file2 = col1.file_uploader("Upload Extra Dictionary (Additional Driver)", type=("xlsx"))
         # Add a text input field below the second file upload
@@ -115,10 +121,10 @@ if headRight.checkbox("Edit"):
                         df_add.rename(columns={col: current_new_drive + "_pos"}, inplace=True)
             
 
-    # Add a string input to the right column with a default value
+    # Add a string input to the right column with a default value for timefram
     current_pattern = col2.text_input("Timestamp Format", "ISO8601")
 
-    # Add three column selections to the right column with default values
+    # Add three column selections to the right column with default values (text in the first column, ID in the second, timestamp in the third column)
     col_selection1 = col2.selectbox("Select ID", df.columns, index=1)
     col_selection2 = col2.selectbox("Select Timestamp", df.columns, index=2)
     col_selection3 = col2.selectbox("Select Text", df.columns, index=0)
@@ -149,10 +155,13 @@ if rename and no_error_renaming:
 user_input_integer = min(len(df), user_input_integer)
 df_to_cache = df.head(user_input_integer)
 
+#Shows a preview of the table
 st.table(df_to_cache.head())
 
 
-# Here we define the session states
+# by using session stats, we can save the values of the variables chosen, so that, if we re-run the script, the original values are kept
+# for example, if we have chosen an additional driver to add, it stays saved in the app during that session
+
 st.session_state['timestamp_pattern'] = current_pattern
 st.session_state['new_drive'] = current_new_drive
 st.session_state['new_dictionary'] = df_add
