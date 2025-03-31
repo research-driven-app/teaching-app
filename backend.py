@@ -1,3 +1,7 @@
+#Backend Page
+#This is the backend of our application, where the text-mining is happening 
+
+
 ##General Libraries
 import pandas as pd
 import numpy as np
@@ -13,7 +17,7 @@ from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-### Detect Language 
+### Detect Language (to later filter out non-english tweets)
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 

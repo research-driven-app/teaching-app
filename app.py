@@ -1,4 +1,8 @@
-# It is helpful to familiarize with the basic functionalities of streamlit
+# FRONTEND PAGE
+# This is our first page, and the page that is loaded when Streamlit is initialized
+
+
+# It is helpful to familiarize with the basic functionalities of streamlit (documentation can be found here https://docs.streamlit.io/)
 
 
 # Before starting, we import the relevant packages
