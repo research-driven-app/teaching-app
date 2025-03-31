@@ -36,7 +36,7 @@ headRight.markdown(" ")
 headLeft.title("Brand Reputation App")
 
 # Here, we link to the next page, this will execute the script, where the backend script (text-mining) would be executed
-st.page_link("pages/app.py", label="Compute and Visualize Brand Reputation", icon="▶️")
+st.page_link("pages/edit.py", label="Compute and Visualize Brand Reputation", icon="▶️")
 st.markdown("---")
 st.markdown(" ")
 
