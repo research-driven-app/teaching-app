@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import os
 
-## Text Mining
+## Text Mining libraries
 import nltk
 
 ##download NLTK data (needed for text-mining)
