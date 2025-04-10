@@ -1,9 +1,6 @@
 # FRONTEND PAGE
 # This is our first page, and the page that is loaded when Streamlit is initialized
-
-
 # It is helpful to familiarize with the basic functionalities of streamlit (documentation can be found here https://docs.streamlit.io/)
-
 
 # Before starting, we import the relevant packages
 
@@ -13,7 +10,7 @@ import streamlit as st
 # Since there are data operations that need to be done, we also import pandas
 import pandas as pd
 
-# Since there is a backend part, we also import the backend
+# Since there is a backend part, we also import the backend. This is important for referencing the backend later
 import backend as bk
 
 
@@ -22,6 +19,12 @@ from io import BytesIO
 
 # Default options are given here. In our case, we define a default text-mining dictionary, that we keep in the folder /data/
 default_dictionary = pd.read_excel("data/default_dict.xlsx")
+rename = False
+user_input_integer = 1000
+current_pattern = "ISO8601"
+current_new_drive = None
+df_add = None
+df = pd.read_csv("data/default_clean.csv")
 
 # This next line helps us with layouting, we define three columns. The one on the left takes 70%, then there is a small gap of 5%, and then the rest takes 20%
 headLeft, headSpacer, headRight = st.columns([0.7,0.05,0.2])
@@ -40,13 +43,6 @@ st.page_link("pages/edit.py", label="Compute and Visualize Brand Reputation", ic
 st.markdown("---")
 st.markdown(" ")
 
-#Here we define the user input variables and their default values
-rename = False
-user_input_integer = 1000
-current_pattern = "ISO8601"
-current_new_drive = None
-df_add = None
-df = pd.read_csv("data/default_clean.csv")
 
 ### Here the editing of the settings on the first page is triggered (checkbox: Edit)
 if headRight.checkbox("Edit"):

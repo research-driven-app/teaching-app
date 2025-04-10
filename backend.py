@@ -17,7 +17,7 @@ from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-### Detect Language (to later filter out non-english tweets)
+### Detect Language (to later be able to filter out non-english tweets)
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 
@@ -38,7 +38,7 @@ def check_columns_for_neg_suffix(df_check, string):
 
 def detect_language(text):
 
-    # Define a function using langdetect, there is some console printing (we might be able to loose it or integrate it in the final output)
+    # Define a function using langdetect
 
     try:
         return detect(text)
@@ -97,7 +97,7 @@ def change_time_columns(df, format_arg=None, dayfirst=True, errors='coerce'):
 # Tokenize the text and add absolute counter
 def tokenize_and_count(text):
     tokens = nltk.word_tokenize(text.lower())  
-    # Convert to lowercase for consistency; this had been done before, so it might be redundant code
+    # Convert to lowercase for consistency
     return Counter(tokens)
 
 @st.cache_data
@@ -109,10 +109,10 @@ def preprocess(df):
     ## Filter out those that are False on the retweet ,here '~' represents those that evaluate to false
     df = df[~df['retweet']]
 
-    ##Use a function to drop those that are duplicated over three columns
+    ## Use a function to drop those that are duplicated over two columns
     df = df.drop_duplicates(subset=['text', 'tweet_id'])
 
-    #fill empty spaces (not sure if needed)
+    # Fill empty spaces
     df['text'] = df['text'].fillna('').astype(str)
 
     # Apply language detection and put it into a new column
@@ -128,10 +128,10 @@ def preprocess(df):
 
     df['text_stemmed'] = df['text'].apply(stem_sentence)    
 
-    # Apply the function to the 'text' column
+    # Apply the tokenization fuction to the 'text' column
     df['term_freq'] = df['text'].apply(tokenize_and_count)
 
-    # Explode the DataFrame so each word gets its own row
+    # Expand the DataFrame so each word gets its own row (Bag of Words)
     expanded_rows = []
     for _, row in df.iterrows():
         for term, freq in row['term_freq'].items():
