@@ -26,7 +26,9 @@ current_new_drive = None
 df_add = None
 df = pd.read_csv("data/default_clean.csv")
 
-# This next line helps us with layouting, we define three columns. The one on the left takes 70%, then there is a small gap of 5%, and then the rest takes 20%
+# This next line helps us with layouting, we define three columns. 
+# 
+# The one on the left takes 70%, then there is a small gap of 5%, and then the rest takes 20%
 headLeft, headSpacer, headRight = st.columns([0.7,0.05,0.2])
 
 
@@ -38,7 +40,7 @@ headRight.markdown(" ")
 # This is the title of our app, "Brand Reputation App", it is set on the left on top "headLeft.title("name of the app goes here")"
 headLeft.title("Brand Reputation App")
 
-# Here, we link to the next page, this will execute the script, where the backend script (text-mining) would be executed
+# Here, we link to the next page, this will execute the script, where the backend script (text-mining) is executed
 st.page_link("pages/edit.py", label="Compute and Visualize Brand Reputation", icon="▶️")
 st.markdown("---")
 st.markdown(" ")
@@ -83,7 +85,7 @@ if headRight.checkbox("Edit"):
 
     output.seek(0)
     
-    # add a download button for the default dictionary (defined above)
+    # add a download button for the default dictionary (defined above) - widget
 
     col12.download_button(
         label="Default Dictionary",
@@ -92,36 +94,8 @@ if headRight.checkbox("Edit"):
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-    # Add a checkbox to the left column if new driver should be added
-    if col12.checkbox("Add New Driver"):
-        uploaded_file2 = col1.file_uploader("Upload Extra Dictionary (Additional Driver)", type=("xlsx"))
-        # Add a text input field below the second file upload
-        text_input = col1.text_input("New Driver Name", "Custom")
 
-        if uploaded_file2 is not None:
-            df_add = pd.read_excel(uploaded_file2)
-            if "term" not in df_add.columns:
-                col1.markdown('<span style="color: red;">Error: At least one column name must be "term"</span>', unsafe_allow_html=True)
-            elif len(df_add.columns) != 3:
-                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with exactly 3 columns: term, ANY-STRING_pos, ANY-STRING_neg</span>', unsafe_allow_html=True)
-            elif bk.check_columns_for_neg_suffix(df_add, "_neg"):
-                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with one of the columns called ANY-STRING_neg</span>', unsafe_allow_html=True)
-            elif bk.check_columns_for_neg_suffix(df_add, "_pos"):
-                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with one of the columns called ANY-STRING_pos</span>', unsafe_allow_html=True)
-            elif len(df_add) != len(default_dictionary):
-                col1.markdown('<span style="color: red;"><b>Error</b>: You should upload a dictionary with unique terms in same amount of the current dictionary.</span>', unsafe_allow_html=True)
-            else:
-                col1.write('<span style="color: green;"><b>Success</b>: Additional Driver Dictionary Uploaded and Validated</span>', unsafe_allow_html=True)
-                current_new_drive = text_input
-            
-                for col in df_add.columns:
-                    if "_neg" in col:
-                        df_add.rename(columns={col: current_new_drive + "_neg"}, inplace=True)
-                    elif "_pos" in col:
-                        df_add.rename(columns={col: current_new_drive + "_pos"}, inplace=True)
-            
-
-    # Add a string input to the right column with a default value for timefram
+    # Add a string input to the right column with a default value for format
     current_pattern = col2.text_input("Timestamp Format", "ISO8601")
 
     # Add three column selections to the right column with default values (text in the first column, ID in the second, timestamp in the third column)
