@@ -1,4 +1,4 @@
-# FRONTEND PAGE 'app.py'
+# FRONTEND PAGE 'app.py' This code can be found on https://github.com/research-driven-app/br
 
 # This is the page that is loaded when Streamlit is initialized, therefore the starting point
 # It is helpful to familiarize with the basic functionalities of streamlit (documentation can be found here https://docs.streamlit.io/)
