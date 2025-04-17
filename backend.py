@@ -1,23 +1,23 @@
-#Backend Page
-#This is the backend of our application, where the text-mining is happening 
+# BACKEND PAGE 'backend.py'
 
+# This is where the data is text-mined and aggregated 
 
-##General Libraries
+# General Libraries
 import pandas as pd
 import numpy as np
 import os
 
-## Text Mining libraries
+# Text Mining libraries
 import nltk
 
-##download NLTK data (needed for text-mining)
+# Download NLTK data (needed for text-mining)
 nltk.download('punkt')
 nltk.data.path.append('nltk_data')
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-### Detect Language (to later be able to filter out non-english tweets)
+# Detect Language (to later be able to filter out non-english tweets)
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 
@@ -51,7 +51,7 @@ def stem_sentence(sentence):
     # Initialize the PorterStemmer
     stemmer = PorterStemmer()
 
-    ##define the stemming function
+    ##Define the stemming function
     words = nltk.word_tokenize(sentence)
     stemmed_words = [stemmer.stem(word) for word in words]
     return ' '.join(stemmed_words)
@@ -103,13 +103,13 @@ def tokenize_and_count(text):
 @st.cache_data
 def preprocess(df):
 
-    ## Create a filter for Tweets starting with RT*
+    # Create a filter for Tweets starting with RT*
     df['retweet'] = df['text'].str.match(r'^RT')
 
-    ## Filter out those that are False on the retweet ,here '~' represents those that evaluate to false
+    # Filter out those that are False on the retweet ,here '~' represents those that evaluate to false
     df = df[~df['retweet']]
 
-    ## Use a function to drop those that are duplicated over two columns
+    # Use a function to drop duplicates over two columns
     df = df.drop_duplicates(subset=['text', 'tweet_id'])
 
     # Fill empty spaces
@@ -118,17 +118,17 @@ def preprocess(df):
     # Apply language detection and put it into a new column
     df['language'] = df['text'].apply(detect_language)
 
-    ## For english only filter
+    # For english only filter
     df = df[df['language']== 'en']
 
-    ## Convert to lower case
+    # Convert to lower case
     df['text'] = df['text'].str.lower() 
 
-    ### Apply stemming
+    # Apply stemming
 
     df['text_stemmed'] = df['text'].apply(stem_sentence)    
 
-    # Apply the tokenization fuction to the 'text' column
+    # Apply the tokenization function to the 'text' column
     df['term_freq'] = df['text'].apply(tokenize_and_count)
 
     # Expand the DataFrame so each word gets its own row (Bag of Words)

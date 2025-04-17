@@ -1,8 +1,9 @@
-# FRONTEND PAGE
-# This is our first page, and the page that is loaded when Streamlit is initialized
+# FRONTEND PAGE 'app.py'
+
+# This is the page that is loaded when Streamlit is initialized, therefore the starting point
 # It is helpful to familiarize with the basic functionalities of streamlit (documentation can be found here https://docs.streamlit.io/)
 
-# Before starting, we import the relevant packages
+# We import the relevant packages
 
 # We import streamlit 
 import streamlit as st
@@ -26,13 +27,12 @@ current_new_drive = None
 df_add = None
 df = pd.read_csv("data/default_clean.csv")
 
-# This next line helps us with layouting, we define three columns. 
-# 
+# This next line helps us with layouting, we define three columns.  
 # The one on the left takes 70%, then there is a small gap of 5%, and then the rest takes 20%
 headLeft, headSpacer, headRight = st.columns([0.7,0.05,0.2])
 
 
-# We want to push the content of the columns down, therefore we take two whitespaces
+# We want to push the content of the columns down, therefore we set two whitespaces
 headRight.markdown(" ")
 headRight.markdown(" ")
 
@@ -40,21 +40,23 @@ headRight.markdown(" ")
 # This is the title of our app, "Brand Reputation App", it is set on the left on top "headLeft.title("name of the app goes here")"
 headLeft.title("Brand Reputation App")
 
-# Here, we link to the next page, this will execute the script, where the backend script (text-mining) is executed
+# Link to the next page, this will execute the script
 st.page_link("pages/edit.py", label="Compute and Visualize Brand Reputation", icon="▶️")
 st.markdown("---")
 st.markdown(" ")
 
 
-### Here the editing of the settings on the first page is triggered (checkbox: Edit)
+# Editing of the settings on the first page is triggered (checkbox: Edit)
 if headRight.checkbox("Edit"):
     rename = True
     # Create three columns (larger column for file upload, smaller column for settings)
     col1, spacer, col2 = st.columns([1.2,0.1,0.8])
     # Create a user input widget in the first column, setting the sample size, along with the minimum and default value
+    uploaded_file = col1.file_uploader("Choose a CSV file", type=("csv"))
+    
     user_input_integer = col1.number_input('Sample Size', min_value=100, value=1000, step=1)
 
-    uploaded_file = col1.file_uploader("Choose a CSV file", type=("csv"))
+    
 
 
     if uploaded_file is not None:
@@ -133,16 +135,9 @@ df_to_cache = df.head(user_input_integer)
 st.table(df_to_cache.head())
 
 
-# by using session stats, we can save the values of the variables chosen, so that, if we re-run the script, the original values are kept
-# for example, if we have chosen an additional driver to add, it stays saved in the app during that session
+# by using session states, we can save the values of the variables chosen, so that, if we re-run the script, the original values are kept
+# for example, the timestamp format it stays saved in the app during that session
 
 st.session_state['timestamp_pattern'] = current_pattern
-st.session_state['new_drive'] = current_new_drive
-st.session_state['new_dictionary'] = df_add
-
 st.session_state['cached_df'] = df_to_cache
 st.session_state['cached_dictionary'] = default_dictionary
-
-#df.sample(user_input_integer).to_csv("data/cached_df.csv", index=False)
-#df.to_csv("data/cached_df.csv", index=False)
-#default_dictionary.to_csv("data/cached_dictionary.csv", index=False)
