@@ -1,11 +1,11 @@
-This is companion code for the paper on research-driven apps.
+This is companion code for the paper on interactive research-driven apps.
 
 
 
 
 Try the streamlit app at:
 
-[brandreputation.streamlit.app](https://brandreputation.streamlit.app/)
+[[brandreputation.streamlit.app](https://brandreputation.streamlit.app/)](https://research-driven-app.streamlit.app/)
 
 enabling the analysis of this paper below as a research-driven app
 
