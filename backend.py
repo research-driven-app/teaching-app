@@ -179,55 +179,96 @@ def prepare_aggregate_dict(list_of_drives):
 
 @st.cache_data
 def compute_drives(final_df, granularity, extra_driver=None):
-    dict_columns_ids = ["price", "squality", "goodsq", "cool", "exciting", "innov", "socresp", "comm", "friendly", "personalrel", "trust"]
+    # 1. Which drivers we expect to have *_pos and *_neg columns
+    dict_columns_ids = [
+        "price", "squality", "goodsq",
+        "cool", "exciting", "innov", "socresp",
+        "comm", "friendly", "personalrel", "trust"
+    ]
     if extra_driver is not None:
         dict_columns_ids.append(extra_driver)
 
+    # 2. Build aggregation dictionary for groupby
+    #    e.g. { 'price_pos': 'sum', 'price_neg': 'sum', ..., 'tweet_id': 'count', 'created_at': 'first' }
     dict_to_aggregate = prepare_aggregate_dict(dict_columns_ids)
+    dict_to_aggregate["created_at"] = 'first'  # representative timestamp for that bucket
 
-    dict_to_aggregate["created_at"] = 'first'
-
+    # 3. Group by the requested granularity (e.g. "month" or ["year","month"])
     grouped_df = final_df.groupby(granularity).agg(dict_to_aggregate).reset_index()
 
+    # tweet_id -> total_tweets
     grouped_df = grouped_df.rename(columns={'tweet_id': 'total_tweets'})
 
-    dict_of_drivers = {}
-    dict_of_drivers["Value"] = ["price", "squality", "goodsq"]
-    dict_of_drivers["Brand"] = ["cool", "exciting", "innov", "socresp"]
-    dict_of_drivers["Relationship"] = ["comm", "friendly", "personalrel", "trust"]
+    # 4. Build driver hierarchies
+    dict_of_drivers = {
+        "Value": ["price", "squality", "goodsq"],
+        "Brand": ["cool", "exciting", "innov", "socresp"],
+        "Relationship": ["comm", "friendly", "personalrel", "trust"],
+    }
 
     if extra_driver is not None:
         dict_of_drivers[extra_driver] = [extra_driver]
 
     driver_columns = []
 
-    for driver in dict_of_drivers:
+    # 5. Compute *_net for each subdriver, then Driver-level averages
+    for driver, subdrivers in dict_of_drivers.items():
 
-        for value in dict_of_drivers[driver]:
-
-            new_column = value+"_net"
-            grouped_df[new_column] = grouped_df[value+"_pos"] - grouped_df[value+"_neg"]
+        # For each subdriver like "price", make "price_net" = price_pos - price_neg
+        for value in subdrivers:
+            new_column = value + "_net"
+            grouped_df[new_column] = grouped_df[value + "_pos"] - grouped_df[value + "_neg"]
             driver_columns.append(new_column)
 
-        computed_nets = [value+"_net" for value in dict_of_drivers[driver]]
-        new_column_driver = driver+"_Driver"
+        # Now compute e.g. Value_Driver = mean of [price_net, squality_net, goodsq_net]
+        computed_nets = [value + "_net" for value in subdrivers]
+        new_column_driver = driver + "_Driver"
         grouped_df[new_column_driver] = grouped_df[computed_nets].mean(axis=1)
-        driver_columns.append(new_column_driver)        
+        driver_columns.append(new_column_driver)
 
-    grouped_df['Brand Reputation'] = grouped_df['Value_Driver'] + grouped_df['Brand_Driver'] + grouped_df['Relationship_Driver']
-    if extra_driver is not None:
-        grouped_df['Brand Reputation'] = grouped_df['Brand Reputation'] + grouped_df[extra_driver+"_Driver"]
+    # 6. Compute Brand Reputation before normalization
+    grouped_df['Brand Reputation'] = (
+        grouped_df['Value_Driver'] +
+        grouped_df['Brand_Driver'] +
+        grouped_df['Relationship_Driver'] +
+        (
+            grouped_df[extra_driver + "_Driver"]
+            if extra_driver is not None
+            else 0
+        )
+    )
 
-    # Perform z-score normalization: 1) first means, then standard deviation 2) substract the mean from the value and divide by standard deviation
-    for column in driver_columns:
+    # 7. Z-score normalize all driver columns (subdrivers + *_Driver + Brand Reputation)
+    all_score_cols = driver_columns + ['Brand Reputation']
+
+    for column in all_score_cols:
         mean = grouped_df[column].mean()
         std = grouped_df[column].std()
-        grouped_df[column] = (grouped_df[column] - mean) / std
+        # if std is 0 (constant column), avoid divide-by-zero
+        if std == 0 or pd.isna(std):
+            grouped_df[column] = 0
+        else:
+            grouped_df[column] = (grouped_df[column] - mean) / std
 
-    driver_columns = driver_columns + ['Brand Reputation']
-    
+    # 8. Sort by created_at for chronological output
     grouped_df.sort_values(by='created_at', inplace=True)
-    grouped_df.set_index("created_at", inplace=True)
-    grouped_df = grouped_df[driver_columns]
+
+    # 9. Build the final column order for returning
+    # granularity can be a string ("month") or a list (["year","month"])
+    final_cols = []
+
+    if isinstance(granularity, str):
+        final_cols.append(granularity)
+    else:
+        final_cols.extend(granularity)
+
+    # include representative timestamp, tweet volume, then all scores
+    final_cols.append('created_at')
+    final_cols.append('total_tweets')
+    final_cols.extend(all_score_cols)
+
+    # 10. Keep only what we care about in the returned table
+    grouped_df = grouped_df[final_cols]
+
     return grouped_df
 
