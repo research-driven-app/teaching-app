@@ -74,6 +74,10 @@ rename = False
 user_input_integer = 1000
 current_new_drive = None  # keeping this placeholder from your original code
 
+# Page Title
+
+st.set_page_config(page_title="Brand Reputation Teaching App")
+
 # Page header layout
 headLeft, headSpacer, headRight = st.columns([0.7, 0.05, 0.2])
 
